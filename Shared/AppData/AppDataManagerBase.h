@@ -10,7 +10,7 @@ namespace Data {
 struct Data {
     explicit Data(const QString& filename);
     QString filename() const;
-
+	virtual ~Data(){}
     virtual void load(QDataStream& s) = 0;
     virtual void save(QDataStream& s) = 0;
 

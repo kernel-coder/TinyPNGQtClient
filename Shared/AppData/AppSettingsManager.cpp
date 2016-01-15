@@ -8,8 +8,14 @@ namespace Data {
 
 AppData::AppData(QObject* p) : JObject(p),  Data(TCS::Utils::dataDir("appData.bin")),
     _removeItemWhenDone (false), _replaceSourceFile(true), _startsOptimizingWhenDrop(true), _fileFormat("_opt"),
-    _apiUrl("https://api.tinify.com/shrink"), _apiKey("pjOaZ7vpi3jX-loMkErLvt_VIY2Phxv_")
+    _removeErrorItems(false), _apiUrl("https://api.tinify.com/shrink"), _apiKey("")
 {
+}
+
+
+bool AppData::isValid() const
+{
+    return !_apiKey.isEmpty() && !_apiUrl.isEmpty();
 }
 
 

@@ -23,6 +23,9 @@ class AppData : public JObject, public Data {
       MetaPropertyPublicSet(bool, replaceSourceFile)
       MetaPropertyPublicSet(bool, startsOptimizingWhenDrop)
       MetaPropertyPublicSet(QString, fileFormat)
+      MetaPropertyPublicSet(bool, removeErrorItems)
+
+      bool isValid() const;
 
 
       void load(QDataStream& s);

@@ -3,7 +3,8 @@
 
 #include <QTableWidget>
 #include "JObject.h"
-
+#include <QLabel>
+#include <QProgressBar>
 
 class TinyPNGError : public JObject {
     Q_OBJECT
@@ -19,7 +20,7 @@ class ImageInput : public JObject {
 public:
     Q_INVOKABLE explicit ImageInput(QObject* parent = 0) : JObject(parent){}
 
-    MetaPropertyPrivateSet(unsigned long, size)
+    MetaPropertyPrivateSet(qint64, size)
     MetaPropertyPrivateSet(QString, type)
 };
 
@@ -44,7 +45,7 @@ public:
 
 
 struct TableWidgetPri;
-struct UserData;
+struct MetaData;
 class QNetworkReply;
 
 class TableWidget : public QTableWidget
@@ -66,7 +67,7 @@ protected:
 
 
 private slots:
-    void optimizeFile(UserData* ud);
+    void optimizeFile(MetaData* ud);
     void onUploadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal);
     void onPostFinished();
