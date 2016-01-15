@@ -16,6 +16,7 @@ public:
 
 private slots:
     void showSettingsDlg();
+    void showAboutDlg();
 
 private:
     MainWindowPri* d;

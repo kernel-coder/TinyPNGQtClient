@@ -16,13 +16,19 @@ DESTDIR= $$PWD/Setup
 SOURCES += main.cpp\
         MainWindow.cpp \
     TableWidget.cpp \
-    SettingsDlg.cpp
+    SettingsDlg.cpp \
+    AboutDlg.cpp
 
 HEADERS  += MainWindow.h \
     TableWidget.h \
-    SettingsDlg.h
+    SettingsDlg.h \
+    AboutDlg.h
 
 FORMS += \
-    SettingsDlg.ui
+    SettingsDlg.ui \
+    AboutDlg.ui
 
 include ($$PWD/Shared/Shared.pri)
+
+RESOURCES += \
+    rsrc.qrc

@@ -4,6 +4,7 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include "SettingsDlg.h"
+#include "AboutDlg.h"
 
 struct MainWindowPri{
     TableWidget* TableUI;
@@ -17,20 +18,22 @@ MainWindow::MainWindow(QWidget *parent) :
     QWidget * w = new QWidget;
     QHBoxLayout* hboxRoot = new QHBoxLayout(w);
     hboxRoot->addWidget(d->TableUI, 1);
-    QVBoxLayout* hbox = new QVBoxLayout;
-    hbox->setMargin(0);
+    QVBoxLayout* vbox = new QVBoxLayout; vbox->setMargin(0);
     QPushButton* pbStart = new QPushButton("Start");
-    hbox->addWidget(pbStart);hbox->addStretch(1);
+    vbox->addWidget(pbStart);vbox->addStretch(1);
     QPushButton* pbClear = new QPushButton("Clear Items");
     QPushButton* pbSettings = new QPushButton("Settings");
-    hbox->addWidget(pbClear);hbox->addWidget(pbSettings);
-    hboxRoot->addLayout(hbox);
+    vbox->addWidget(pbClear);vbox->addWidget(pbSettings);
+    QPushButton* pbAbout = new QPushButton("About");
+    vbox->addWidget(pbAbout);
+    hboxRoot->addLayout(vbox);
     setCentralWidget(w);
     resize(1024, 400);
 
     connect(pbClear, SIGNAL(clicked(bool)), d->TableUI, SLOT(clearItems()));
     connect(pbStart, SIGNAL(clicked(bool)), d->TableUI, SLOT(startOptimizing()));
     connect(pbSettings, SIGNAL(clicked(bool)), SLOT(showSettingsDlg()));
+    connect(pbAbout, SIGNAL(clicked(bool)), SLOT(showAboutDlg()));
 }
 
 MainWindow::~MainWindow () {delete d;}
@@ -38,7 +41,14 @@ MainWindow::~MainWindow () {delete d;}
 
 void MainWindow::showSettingsDlg()
 {
-    SettingsDlg *dlg = new SettingsDlg;
+    SettingsDlg *dlg = new SettingsDlg(this);
+    dlg->exec();
+}
+
+
+void MainWindow::showAboutDlg()
+{
+    AboutDlg *dlg = new AboutDlg(this);
     dlg->exec();
 }
 
