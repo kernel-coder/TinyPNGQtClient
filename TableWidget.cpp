@@ -41,6 +41,7 @@ struct UserData : QObjectUserData {
 TableWidget::TableWidget(QWidget *p) : QTableWidget(0, 3, p), d(new TableWidgetPri)
 {    
     QStringList cols; cols << "Status" << "Progress" << "File";
+    setColumnWidth(0, 120);setColumnWidth(1, 160);
     setHorizontalHeaderLabels(cols);
     horizontalHeader()->setStretchLastSection(true);
     setAcceptDrops(true);
@@ -59,7 +60,20 @@ TableWidget::~TableWidget()
 }
 
 
+void TableWidget::startOptimizing()
+{
+
+}
+
+
+void TableWidget::clearItems()
+{
+
+}
+
+
 Qt::DropActions TableWidget::supportedDropActions() const {return Qt::LinkAction;}
+
 
 void TableWidget::dragEnterEvent(QDragEnterEvent *e)
 {
@@ -80,6 +94,7 @@ void TableWidget::dragMoveEvent(QDragMoveEvent *e)
 {
     e->accept();
 }
+
 
 void TableWidget::dropEvent(QDropEvent *e)
 {
@@ -105,7 +120,7 @@ void TableWidget::optimizeFile(UserData* ud)
 {
     QFile fp(ud->Filename);
     if (fp.open(QFile::ReadOnly)) {
-        ud->LblStatus->setText("Optimizing...");
+        ud->LblStatus->setText("Uploading...");
         QByteArray data = fp.readAll(); fp.close();
         QUrl url("https://api.tinify.com/shrink");
         QNetworkRequest req(url);
@@ -115,11 +130,43 @@ void TableWidget::optimizeFile(UserData* ud)
         req.setRawHeader("Authorization", auth);
         QNetworkReply* reply = d->NetMgr->post(req, data);
         reply->setUserData(FILE_TAG, (QObjectUserData*)ud);
-        connect(reply, SIGNAL(uploadProgress(qint64,qint64)), SLOT(onDownloadProgress(qint64,qint64)));
+        connect(reply, SIGNAL(uploadProgress(qint64,qint64)), SLOT(onUploadProgress(qint64,qint64)));
         connect(reply, SIGNAL(finished()), this, SLOT(onPostFinished()));        
     }
     else {
         ud->LblStatus->setText("Failed to open file");
+    }
+}
+
+
+bool TableWidget::handleError(QNetworkReply *reply)
+{
+    bool noError = true;
+    if (reply) {
+        int statusCode = reply->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
+        QNetworkReply::NetworkError err = reply->error();
+        noError = err == QNetworkReply::NoError;
+        if (!noError) {
+            qDebug() << QString("Error occured. Status code = %1, errcode = %2, msg = %3").arg(statusCode).arg(err).arg(reply->errorString());
+            TinyPNGError tpErr;tpErr.importFromJson(reply->readAll());
+            qDebug() << "TinyPNG error: " << tpErr.message();
+        }
+    }
+    return noError;
+}
+
+
+void TableWidget::onUploadProgress(qint64 bytesSent, qint64 bytesTotal)
+{
+    QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
+    if (reply) {
+        if (bytesTotal <= 0) return;
+        UserData* ud = (UserData*)(reply->userData(FILE_TAG));
+        ud->ProgressBar->setValue(bytesSent * 100 / bytesTotal);
+        if (bytesSent == bytesTotal) {
+            UserData* ud = (UserData*)(reply->userData(FILE_TAG));
+            ud->LblStatus->setText("Optimizing...");
+        }
     }
 }
 
@@ -138,10 +185,11 @@ void TableWidget::onDownloadProgress(qint64 bytesReceived, qint64 bytesTotal)
 void TableWidget::onPostFinished()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    if (reply) {
+    if (handleError(reply)) {
         UserData* ud = (UserData*)(reply->userData(FILE_TAG));
         QByteArray location = reply->rawHeader("Location");
         QByteArray data = reply->readAll();
+        TinyPNGPostOutput jsonOutput; jsonOutput.importFromJson(data);
         if (location.isEmpty()) {
             qDebug() << "Location header found empty for file " << ud->Filename;
         }
@@ -164,7 +212,7 @@ void TableWidget::onPostFinished()
 void TableWidget::onGetFinished()
 {
     QNetworkReply* reply = qobject_cast<QNetworkReply*>(sender());
-    if (reply) {
+    if (handleError(reply)) {
         UserData* ud = (UserData*)(reply->userData(FILE_TAG));
         ud->LblStatus->setText("Done!");
         QByteArray data = reply->readAll();

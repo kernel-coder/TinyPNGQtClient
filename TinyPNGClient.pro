@@ -15,7 +15,14 @@ DESTDIR= $$PWD/Setup
 
 SOURCES += main.cpp\
         MainWindow.cpp \
-    TableWidget.cpp
+    TableWidget.cpp \
+    SettingsDlg.cpp
 
 HEADERS  += MainWindow.h \
-    TableWidget.h
+    TableWidget.h \
+    SettingsDlg.h
+
+FORMS += \
+    SettingsDlg.ui
+
+include ($$PWD/Shared/Shared.pri)
